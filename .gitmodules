@@ -1,0 +1,3 @@
+[submodule "tftsnapshots"]
+	path = tftsnapshots
+	url = https://github.com/ajl0023/tftsnapshots
