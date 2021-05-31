@@ -1,3 +1,3 @@
 git add .
-git commit -m "inital commit"
+git commit -m "fixing few errors from owclient"
 git push origin master

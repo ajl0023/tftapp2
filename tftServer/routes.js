@@ -5,15 +5,24 @@ const db = getdb();
 const matchesdb = getMatchesdb();
 const roundsdb = getRoundsdb();
 const usersdb = getUsersdb();
-const items = require("./items2.json");
+const path = require("path");
 const fs = require("fs");
 module.exports = function (app) {
+  app.get("/", function (req, res) {
+    res.sendFile(path.join(__dirname, "../tftapp/build", "index.html"));
+  });
   app.post("/api/match-history", async (req, res) => {
     const rounds = req.body.rounds;
     const matchid = new ObjectId();
     const userid = new ObjectId();
-    const username = rounds[0].summoner_name;
-
+    const finduserName = () => {
+      for (let round in rounds) {
+        if (round.summoner_name.length > 0) {
+          return round.username;
+        }
+      }
+    };
+    const username = finduserName();
     const findUser = await usersdb.findOne({
       username: username,
     });
@@ -26,6 +35,9 @@ module.exports = function (app) {
     const roundsProm = roundsdb.insertMany(matchRounds);
     const matchProm = matchesdb.insertOne({
       _id: matchid,
+      rank: req.body.rank,
+      current_round_data: req.body.current_round_data,
+      lastRound: req.body.round,
       user: findUser ? findUser._id : userid,
     });
 
@@ -64,22 +76,21 @@ module.exports = function (app) {
     const roundsProm = [];
     const obj = {};
     for (let match of matches) {
+      const foundMatch = await matchesdb.findOne({ _id: ObjectId(match) });
+
       roundsProm.push(
         roundsdb
           .find({
             matchid: ObjectId(match),
           })
+          .sort({ "round_type.stage": 1 })
           .toArray()
           .then((rounds) => {
-            console.log(rounds);
             const lastRound = rounds[rounds.length - 1];
-            const health = parseInt(lastRound.health);
-            if (health > 0 && lastRound.board.length > 0) {
-              return lastRound;
-            } else {
-              rounds[rounds.length - 2]["rank"] = lastRound.rank;
-              return rounds[rounds.length - 2];
-            }
+
+            lastRound["rank"] = foundMatch.rank;
+
+            return lastRound;
           })
       );
     }
@@ -88,6 +99,7 @@ module.exports = function (app) {
 
     res.json(round);
   });
+
   app.get("/api/match-history/:username/:id", async (req, res) => {
     const username = req.params.username;
     const matchid = req.params.id;
@@ -95,11 +107,17 @@ module.exports = function (app) {
       .find({
         matchid: ObjectId(matchid),
       })
-      .toArray();
+      .sort({ sortNum: 1 })
 
+      .toArray();
+    const matchData = await matchesdb.findOne({
+      _id: ObjectId(matchid),
+    });
+    const rank = matchData.rank;
     let currRound;
     let currStage;
     const lastRound = match[match.length - 1];
+
     if (!lastRound.round_type.stage) {
       const prevRound = parseInt(match[match.length - 2].round_type.stage[0]);
       const prevStage = parseInt(match[match.length - 2].round_type.stage[2]);
@@ -122,7 +140,7 @@ module.exports = function (app) {
       ) {
         let currRound;
         let currStage;
-
+        match[i].round_type["stage"] = "match_start";
         const nextRound = parseInt(match[i + 1].round_type.stage[0]);
         const nextStage = parseInt(match[i + 1].round_type.stage[2]);
         if (nextStage === 1) {
@@ -137,13 +155,24 @@ module.exports = function (app) {
         };
       }
     }
-
-    res.json(match);
+    const fileteredMatch = match.filter(
+      (round) =>
+        round.board.length > 0 &&
+        (!round.carouselArr || round.carouselArr.length < 1)
+    );
+    res.json({
+      fileteredMatch,
+      rank,
+    });
   });
   app.delete("/api/match-history", async (req, res) => {
     const currdb = db.db("tft-matches");
 
     currdb.dropDatabase();
     res.json("done");
+  });
+
+  app.get("*", function (req, res) {
+    res.sendFile(path.join(__dirname, "../tftapp/build", "index.html"));
   });
 };

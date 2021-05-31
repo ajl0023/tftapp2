@@ -5,7 +5,5 @@ button.onclick = () => {
     .post("http://localhost:5000/api/match-history", {
       data: 1,
     })
-    .then((data) => {
-      console.log(data);
-    });
+    .then((data) => {});
 };
