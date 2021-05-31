@@ -1,3 +1,3 @@
 git add . 
-git commit -m "fixing few errors from owclient"
+git commit -m "fixed react related errors"
 git push origin master
