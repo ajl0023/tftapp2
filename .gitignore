@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+/tftsnapshots
 /tftapp
 # testing
 /coverage
