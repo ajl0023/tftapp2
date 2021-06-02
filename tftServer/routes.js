@@ -15,14 +15,16 @@ module.exports = function (app) {
     const rounds = req.body.rounds;
     const matchid = new ObjectId();
     const userid = new ObjectId();
+
     const finduserName = () => {
-      for (let round in rounds) {
-        if (round.summoner_name.length > 0) {
-          return round.username;
+      for (let round of rounds) {
+        if (round.summoner_name && round.summoner_name.length > 0) {
+          return round.summoner_name;
         }
       }
     };
     const username = finduserName();
+
     const findUser = await usersdb.findOne({
       username: username,
     });
@@ -37,7 +39,7 @@ module.exports = function (app) {
       _id: matchid,
       rank: req.body.rank,
       current_round_data: req.body.current_round_data,
-      lastRound: req.body.round,
+      lastRound: req.body.currRound,
       user: findUser ? findUser._id : userid,
     });
 
@@ -83,7 +85,7 @@ module.exports = function (app) {
           .find({
             matchid: ObjectId(match),
           })
-          .sort({ "round_type.stage": 1 })
+          .sort({ sortCount: 1 })
           .toArray()
           .then((rounds) => {
             const lastRound = rounds[rounds.length - 1];
@@ -156,10 +158,15 @@ module.exports = function (app) {
       }
     }
     const fileteredMatch = match.filter(
-      (round) =>
-        round.board.length > 0 &&
-        (!round.carouselArr || round.carouselArr.length < 1)
+      (round) => round.board.length > 0 && !round.roundCheck
+      // (!round.carouselArr || round.carouselArr.length < 1) &&
+      // round.stage &&
+      // round.stage[2] !== "4"
     );
+    const lastRoundData = matchData;
+    lastRoundData.current_round_data.round_type["stage"] =
+      lastRoundData.lastRound;
+    fileteredMatch.push(lastRoundData.current_round_data);
     res.json({
       fileteredMatch,
       rank,

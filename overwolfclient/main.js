@@ -1,5 +1,7 @@
 import axios from "axios";
 import "./testbutton";
+import { startLauncher } from "./launcherInfo";
+
 var g_interestedInFeatures = [
   "counters",
   "match_info",
@@ -10,6 +12,7 @@ var g_interestedInFeatures = [
   "bench",
   "carousel",
   "live_client_data",
+  "lobby_info",
 ];
 
 let currRound = "start";
@@ -33,7 +36,24 @@ let current_round_data = {
 var onErrorListener, onInfoUpdates2Listener, onNewEventsListener;
 
 const needsParsed = ["store", "board", "carousel", "bench"];
+let count = 0;
+function resetState() {
+  current_round_data.store = [];
+  current_round_data.carousel = [];
+  current_round_data.board = [];
+  current_round_data.bench = [];
+  current_round_data.gold = "";
+  current_round_data.health = "";
+  current_round_data.carouselArr = "";
+  current_round_data.round_outcome = {};
+  current_round_data.round_type = {};
+  current_round_data.xp = {};
+  current_round_data.round = null;
 
+  count = 0;
+  matchEnded = false;
+}
+startLauncher(resetState);
 function addToData(prop) {
   const objProp = Object.getOwnPropertyNames(prop)[0];
   let data;
@@ -48,6 +68,9 @@ function addToData(prop) {
     if (objProp === "carousel" || objProp === "bench") {
       data = getParsedData(dataToParse[`${objProp}_pieces`]);
       current_round_data[objProp].push(data);
+      if (objProp === "carousel") {
+        current_round_data["carouselArr"] = data;
+      }
     }
     if (objProp === "board" && roundType && roundType.name === "round_start") {
       data = getParsedData(dataToParse[`${objProp}_pieces`]);
@@ -56,6 +79,7 @@ function addToData(prop) {
     }
   } else if (objProp === "me") {
     const meData = prop[objProp]; //"{rank:4}"
+
     const meobjProp = Object.getOwnPropertyNames(meData)[0]; //"rank"
 
     current_round_data[meobjProp] = meData[meobjProp];
@@ -100,23 +124,7 @@ function handleLiveClientData(data) {
     current_round_data["summoner_name"] = parsed.summonerName;
   }
 }
-let count = 0;
-function resetState() {
-  current_round_data.store = [];
-  current_round_data.carousel = [];
-  current_round_data.board = [];
-  current_round_data.bench = [];
-  current_round_data.gold = "";
-  current_round_data.health = "";
-  current_round_data.carouselArr = [];
-  current_round_data.round_outcome = {};
-  current_round_data.round_type = {};
-  current_round_data.xp = {};
-  current_round_data.round = null;
 
-  count = 0;
-  matchEnded = false;
-}
 function registerEvents() {
   onErrorListener = function () {};
 
@@ -148,6 +156,7 @@ function registerEvents() {
           const roundCheck = prev || next;
           rounds[i].round_type.stage = `${roundCheck[0]}-4`;
         }
+        round["sortCount"] = i;
         return round;
       });
       axios
@@ -173,43 +182,41 @@ function registerEvents() {
       count = count + 1;
     }
   }
+
   onNewEventsListener = function (info) {
+    const copy = {
+      ...current_round_data,
+    };
     const events = info.events[0];
     roundType = events;
+
     if (currRound === current_round_data.round) {
       currRound = "same_round";
     }
 
     if (
+      currRound !== "round_start" &&
       events.name === "round_start" &&
       ((currRound !== "start" && currRound !== "same_round") ||
         current_round_data.round)
     ) {
-      current_round_data.round_type["check"] = currRound;
+      current_round_data.round_type["stage"] = currRound;
 
-      const copy = {
-        ...current_round_data,
-        sortNum: countSort,
-      };
       const round = current_round_data.round_type.stage;
       if (current_round_data.carousel.length > 0 && round && round[0] !== "1") {
         current_round_data.round_type.stage = `${round[0]}-5`;
       }
       rounds.push(copy);
-      countSort++;
 
       resetState();
     }
     if (events.name === "battle_start" && events.data === "carousel") {
-      rounds.push({
-        ...current_round_data,
-
-        carouselArr: current_round_data.carousel,
-      });
+      copy.roundCheck = `${currStage[0]}-4`;
+      rounds.push(copy);
     }
 
     if (currRound === "1-1" && events.name === "battle_start") {
-      rounds.push(current_round_data);
+      rounds.push(copy);
     }
     currRound = currStage;
     if (events.name === "match_end" || current_round_data.health === 0) {
@@ -226,6 +233,7 @@ function registerEvents() {
   // for events and will contain all the current information
   overwolf.games.events.onInfoUpdates2.addListener(onInfoUpdates2Listener);
   // an event triggerd
+
   overwolf.games.events.onNewEvents.addListener(onNewEventsListener);
 }
 

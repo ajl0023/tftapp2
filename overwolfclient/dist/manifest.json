@@ -11,11 +11,12 @@
     "description": "Game Events Consumer Sample"
   },
   "data": {
-    "start_window": "index",
     "game_targeting": {
       "type": "dedicated",
-      "game_ids": [5426]
+      "game_ids": [5426, 10902]
     },
+    "start_window": "index",
+
     "windows": {
       "index": {
         "desktop_only": true,
@@ -35,12 +36,12 @@
         }
       }
     },
-    "game_events": [5426],
+    "game_events": [5426, 10902],
     "launch_events": [
       {
         "event": "GameLaunch",
         "event_data": {
-          "game_ids": [5426]
+          "game_ids": [5426, 10902]
         },
         "start_minimized": false
       }

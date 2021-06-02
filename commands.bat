@@ -1,3 +1,3 @@
 git add . 
-git commit -m "fixed minor typos,edited navbar"
+git commit -m "fixed errors withg ow client"
 git push origin master
