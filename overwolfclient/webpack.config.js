@@ -4,7 +4,15 @@ const path = require("path"),
   { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = (env) => ({
-  entry: "./main.js",
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
+      },
+    ],
+  },
+  entry: ["./main.js"],
 
   mode: "development",
   devtool: "inline-source-map",

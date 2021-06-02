@@ -11,12 +11,11 @@
     "description": "Game Events Consumer Sample"
   },
   "data": {
+    "start_window": "index",
     "game_targeting": {
       "type": "dedicated",
       "game_ids": [5426, 10902]
     },
-    "start_window": "index",
-
     "windows": {
       "index": {
         "desktop_only": true,
@@ -24,12 +23,13 @@
         "file": "main.html",
         "transparent": true,
         "clickthrough": true,
-        "resizable": false,
+        "resizable": true,
         "show_in_taskbar": true,
         "size": {
-          "width": 1150,
-          "height": 535
+          "width": 900,
+          "height": 500
         },
+
         "start_position": {
           "Top": 10,
           "Left": 10
@@ -42,8 +42,7 @@
         "event": "GameLaunch",
         "event_data": {
           "game_ids": [5426, 10902]
-        },
-        "start_minimized": false
+        }
       }
     ]
   }

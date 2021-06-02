@@ -1,5 +1,6 @@
 import axios from "axios";
 import "./testbutton";
+import "./styles/styles.css";
 import { startLauncher } from "./launcherInfo";
 
 var g_interestedInFeatures = [
