@@ -1,6 +1,4 @@
 import axios from "axios";
-import "./testbutton";
-import "./styles/styles.css";
 import { startLauncher } from "./launcherInfo";
 
 var g_interestedInFeatures = [
@@ -54,7 +52,7 @@ function resetState() {
   count = 0;
   matchEnded = false;
 }
-startLauncher(resetState);
+
 function addToData(prop) {
   const objProp = Object.getOwnPropertyNames(prop)[0];
   let data;
@@ -171,6 +169,7 @@ function registerEvents() {
           resetState();
           countSort = 0;
           rounds = [];
+          unregisterEvents();
         })
         .catch(() => {
           resetState();
@@ -211,7 +210,11 @@ function registerEvents() {
 
       resetState();
     }
-    if (events.name === "battle_start" && events.data === "carousel") {
+    if (
+      currStage &&
+      events.name === "battle_start" &&
+      events.data === "carousel"
+    ) {
       copy.roundCheck = `${currStage[0]}-4`;
       rounds.push(copy);
     }
@@ -314,3 +317,4 @@ overwolf.games.getRunningGameInfo(function (res) {
     setTimeout(setFeatures, 1000);
   }
 });
+startLauncher(resetState, registerEvents);

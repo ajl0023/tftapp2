@@ -17,18 +17,13 @@ export const startLauncher = (resetState) => {
   var onErrorListener, onInfoUpdates2Listener, onNewEventsListener;
 
   function registerEvents() {
-    onErrorListener = function (info) {
-      
-    };
+    onErrorListener = function (info) {};
 
     onInfoUpdates2Listener = function (info) {
       resetState();
     };
 
-    onNewEventsListener = function (info) {
-      
-      
-    };
+    onNewEventsListener = function (info) {};
 
     // general events errors
     overwolf.games.events.onError.addListener(onErrorListener);
@@ -63,7 +58,6 @@ export const startLauncher = (resetState) => {
       return false;
     }
 
-    
     return true;
   }
 
@@ -78,9 +72,6 @@ export const startLauncher = (resetState) => {
           window.setTimeout(setFeatures, 2000);
           return;
         }
-
-        
-        
       }
     );
   }
@@ -89,7 +80,6 @@ export const startLauncher = (resetState) => {
   overwolf.games.launchers.onLaunched.addListener(function () {
     registerEvents();
     setTimeout(setFeatures, 1000);
-    
   });
 
   overwolf.games.launchers.getRunningLaunchersInfo(function (res) {
@@ -98,11 +88,9 @@ export const startLauncher = (resetState) => {
       registerEvents();
       setTimeout(setFeatures, 1000);
     }
-    
   });
 
   overwolf.games.launchers.onTerminated.addListener(function (res) {
-    
     setTimeout(window.close, 1000);
   });
 };

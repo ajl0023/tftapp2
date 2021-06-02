@@ -157,18 +157,20 @@ module.exports = function (app) {
         };
       }
     }
-    const fileteredMatch = match.filter(
+    const filteredMatch = match.filter(
       (round) => round.board.length > 0 && !round.roundCheck
-      // (!round.carouselArr || round.carouselArr.length < 1) &&
-      // round.stage &&
-      // round.stage[2] !== "4"
     );
-    const lastRoundData = matchData;
-    lastRoundData.current_round_data.round_type["stage"] =
-      lastRoundData.lastRound;
-    fileteredMatch.push(lastRoundData.current_round_data);
+    const lastRoundData = matchData.current_round_data;
+
+    if (lastRoundData.bench.length < 1) {
+      lastRoundData.bench = lastRound.bench;
+    }
+
+    lastRoundData.round_type["stage"] = matchData.lastRound;
+    filteredMatch.push(lastRoundData);
+
     res.json({
-      fileteredMatch,
+      filteredMatch,
       rank,
     });
   });
@@ -176,6 +178,22 @@ module.exports = function (app) {
     const currdb = db.db("tft-matches");
 
     currdb.dropDatabase();
+    res.json("done");
+  });
+  app.delete("/api/match-history2", async (req, res) => {
+    const idsToDelete = ["60b712d8612ee1366014b627"];
+    for (let id of idsToDelete) {
+      await matchesdb.deleteOne({ _id: ObjectId(id) });
+      await roundsdb.deleteMany({ matchid: ObjectId(id) });
+      await usersdb.updateOne(
+        { _id: ObjectId("60b6cc4fcad875103412be66") },
+        {
+          $pull: {
+            matches: ObjectId(id),
+          },
+        }
+      );
+    }
     res.json("done");
   });
 

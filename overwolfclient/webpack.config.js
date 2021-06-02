@@ -12,10 +12,9 @@ module.exports = (env) => ({
       },
     ],
   },
-  entry: ["./main.js"],
+  entry: "./main.js",
 
   mode: "development",
-  devtool: "inline-source-map",
 
   resolve: {
     extensions: [".ts", ".js"],
