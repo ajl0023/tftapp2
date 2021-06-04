@@ -1,3 +1,3 @@
 git add . 
-git commit -m "fixed some issues with overwolf, but some bugs on overwolf's side"
+git commit -m "small type with items container"
 git push origin master
