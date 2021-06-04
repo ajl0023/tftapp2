@@ -17,7 +17,9 @@ var g_interestedInFeatures = [
 let currRound = "start";
 let currStage;
 let rounds = [];
+let allEvents = [];
 let roundType;
+let currRoundInfo;
 let matchEnded = false;
 let current_round_data = {
   store: [],
@@ -35,9 +37,10 @@ let current_round_data = {
 var onErrorListener, onInfoUpdates2Listener, onNewEventsListener;
 
 const needsParsed = ["store", "board", "carousel", "bench"];
-let count = 0;
+
 function resetState() {
   current_round_data.store = [];
+
   current_round_data.carousel = [];
   current_round_data.board = [];
   current_round_data.bench = [];
@@ -48,8 +51,7 @@ function resetState() {
   current_round_data.round_type = {};
   current_round_data.xp = {};
   current_round_data.round = null;
-
-  count = 0;
+  currRound = "start";
   matchEnded = false;
 }
 
@@ -89,7 +91,56 @@ function handleMatchInfoData(data) {
   let parseData;
 
   const objProp = Object.getOwnPropertyNames(data)[0];
+  const parsedRank = parseInt(current_round_data.rank);
 
+  if (objProp === "match_state" || parsedRank > 0) {
+    const sessRounds = sessionStorage.getItem("rounds");
+
+    parseData = getParsedData(data[objProp]);
+
+    sessionStorage.setItem("event", JSON.stringify(parseData));
+
+    if (parseData.in_progress === false) {
+      const formattedRounds = rounds.map((round, i) => {
+        if (round.carouselArr && round.carouselArr.length > 0) {
+          const prev = rounds[i - 1].round_type.stage;
+          const next = rounds[i + 1].round_type.stage;
+          const roundCheck = prev || next;
+          rounds[i].round_type.stage = `${roundCheck[0]}-4`;
+        }
+        round["sortCount"] = i;
+        return round;
+      });
+      axios
+        .post("http://localhost:7000/api/match-history", {
+          rounds: formattedRounds,
+          rank: current_round_data.rank,
+          current_round_data,
+          currRound: currRound,
+        })
+        .then(() => {
+          current_round_data.rank = "0";
+          resetState();
+
+          rounds = [];
+          allEvents = [];
+          unregisterEvents();
+        })
+        .catch(() => {
+          current_round_data.rank = "0";
+          resetState();
+
+          rounds = [];
+          allEvents = [];
+          unregisterEvents();
+        });
+      if (sessRounds) {
+        sessionStorage.removeItem("round");
+        sessionStorage.removeItem("rounds");
+        sessionStorage.removeItem("allEvents");
+      }
+    }
+  }
   if (match_info_data.includes(objProp)) {
     parseData = getParsedData(data[objProp]);
 
@@ -110,6 +161,7 @@ function getParsedData(data) {
 }
 function handleLiveClientData(data) {
   if (data.active_player) {
+    const parsed = getParsedData(data.active_player);
     if (
       current_round_data["health"] &&
       current_round_data["level"] &&
@@ -117,20 +169,19 @@ function handleLiveClientData(data) {
     ) {
       return;
     }
-    const parsed = getParsedData(data.active_player);
+
     current_round_data["health"] = parsed.championStats.currentHealth;
     current_round_data["level"] = parsed.level;
     current_round_data["summoner_name"] = parsed.summonerName;
   }
 }
 
-function registerEvents() {
+function registerEvents(data) {
   onErrorListener = function () {};
 
   onInfoUpdates2Listener = function (info) {
     const incoming_data = info.info;
-    if (incoming_data.me) {
-    }
+
     if (incoming_data.match_info) {
       handleMatchInfoData(incoming_data.match_info);
     } else if (incoming_data.live_client_data) {
@@ -139,75 +190,49 @@ function registerEvents() {
       addToData(incoming_data);
     }
   };
-  let countSort = 0;
-
-  function postData(events) {
-    if (
-      current_round_data.rank.length > 0 &&
-      current_round_data.rank !== "0" &&
-      count < 4 &&
-      matchEnded
-    ) {
-      const formattedRounds = rounds.map((round, i) => {
-        if (round.carouselArr && round.carouselArr.length > 0) {
-          const prev = rounds[i - 1].round_type.stage;
-          const next = rounds[i + 1].round_type.stage;
-          const roundCheck = prev || next;
-          rounds[i].round_type.stage = `${roundCheck[0]}-4`;
-        }
-        round["sortCount"] = i;
-        return round;
-      });
-      axios
-        .post("http://localhost:7000/api/match-history", {
-          rounds: formattedRounds,
-          rank: current_round_data.rank,
-          current_round_data,
-          currRound: currRound,
-        })
-        .then(() => {
-          resetState();
-          countSort = 0;
-          rounds = [];
-          unregisterEvents();
-        })
-        .catch(() => {
-          resetState();
-          countSort = 0;
-          rounds = [];
-        });
-      return;
-    } else {
-      postData(events);
-      count = count + 1;
-    }
-  }
 
   onNewEventsListener = function (info) {
+    const events = info.events[0];
+    let roundTemp = [0];
+    if (current_round_data.round) {
+      roundTemp = current_round_data.round[0];
+    }
+
+    allEvents.push(info.events[0]);
     const copy = {
       ...current_round_data,
     };
-    const events = info.events[0];
-    roundType = events;
 
+    roundType = events;
     if (currRound === current_round_data.round) {
       currRound = "same_round";
+    }
+    if (events.name === "match_end") {
+      matchEnded = true;
     }
 
     if (
       currRound !== "round_start" &&
       events.name === "round_start" &&
-      ((currRound !== "start" && currRound !== "same_round") ||
+      ((currRound !== "start" && currRound !== current_round_data.round) ||
         current_round_data.round)
     ) {
       current_round_data.round_type["stage"] = currRound;
 
       const round = current_round_data.round_type.stage;
-      if (current_round_data.carousel.length > 0 && round && round[0] !== "1") {
+      if (
+        current_round_data.carousel.length > 0 &&
+        round &&
+        round[0] !== "1" &&
+        currRound !== current_round_data.round
+      ) {
         current_round_data.round_type.stage = `${round[0]}-5`;
       }
-      rounds.push(copy);
 
+      rounds.push(copy);
+      sessionStorage.setItem("round", JSON.stringify(copy));
+      sessionStorage.setItem("rounds", JSON.stringify(rounds));
+      sessionStorage.setItem("allEvents", JSON.stringify(allEvents));
       resetState();
     }
     if (
@@ -216,17 +241,19 @@ function registerEvents() {
       events.data === "carousel"
     ) {
       copy.roundCheck = `${currStage[0]}-4`;
+      sessionStorage.setItem("round", JSON.stringify(copy));
+      sessionStorage.setItem("rounds", JSON.stringify(rounds));
+      sessionStorage.setItem("allEvents", JSON.stringify(allEvents));
       rounds.push(copy);
     }
 
     if (currRound === "1-1" && events.name === "battle_start") {
+      sessionStorage.setItem("round", JSON.stringify(copy));
+      sessionStorage.setItem("rounds", JSON.stringify(rounds));
+      sessionStorage.setItem("allEvents", JSON.stringify(allEvents));
       rounds.push(copy);
     }
     currRound = currStage;
-    if (events.name === "match_end" || current_round_data.health === 0) {
-      matchEnded = true;
-      postData(events);
-    }
   };
 
   // general events errors
@@ -317,4 +344,8 @@ overwolf.games.getRunningGameInfo(function (res) {
     setTimeout(setFeatures, 1000);
   }
 });
-startLauncher(resetState, registerEvents);
+
+function resetMatch() {
+  resetState();
+}
+startLauncher(resetMatch);

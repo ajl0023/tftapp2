@@ -84,6 +84,9 @@ module.exports = function (app) {
         roundsdb
           .find({
             matchid: ObjectId(match),
+            board: {
+              $gt: { $size: 1 },
+            },
           })
           .sort({ sortCount: 1 })
           .toArray()
@@ -109,7 +112,7 @@ module.exports = function (app) {
       .find({
         matchid: ObjectId(matchid),
       })
-      .sort({ sortNum: 1 })
+      .sort({ sortCount: 1 })
 
       .toArray();
     const matchData = await matchesdb.findOne({
@@ -137,8 +140,21 @@ module.exports = function (app) {
 
     for (let i = 0; i < match.length; i++) {
       if (
-        (!match[i].round_type || !match[i].round_type.stage) &&
-        i !== match.length - 1
+        i > 0 &&
+        match[i].board.length === 0 &&
+        match[i - 1].board.length > 0
+      ) {
+        match[i].board = match[i - 1].board;
+      }
+      if (match[i].round_type.stage === "same_round") {
+        match[i].round_type.stage = match[i].round;
+      } else if (
+        match[i].board.length > 0 &&
+        match[i].round_type.stage &&
+        ((match[i].round_type.stage !== "same_round" &&
+          match[i].round_type.stage[0] === "s") ||
+          ((!match[i].round_type || !match[i].round_type.stage) &&
+            i !== match.length - 1))
       ) {
         let currRound;
         let currStage;
@@ -157,17 +173,44 @@ module.exports = function (app) {
         };
       }
     }
+
+    function fillBoard() {
+      for (let i = 0; i < match.length; i++) {
+        if (
+          match[i - 1] &&
+          match[i - 1].board.length > 0 &&
+          match[i].board.length === 0
+        ) {
+          match[i].board = match[i - 1].board;
+        }
+      }
+    }
+    fillBoard();
+
     const filteredMatch = match.filter(
       (round) => round.board.length > 0 && !round.roundCheck
     );
+    const findround1_2 = filteredMatch.findIndex((round) => {
+      return (
+        round.round_type.name === "PVE" &&
+        round.round_type.type === "Minions_1" &&
+        round.round_type.stage === "1-3"
+      );
+    });
+
+    if (findround1_2 >= 0) {
+      filteredMatch[findround1_2].round_type.stage = "1-2";
+    }
     const lastRoundData = matchData.current_round_data;
 
     if (lastRoundData.bench.length < 1) {
       lastRoundData.bench = lastRound.bench;
     }
 
-    lastRoundData.round_type["stage"] = matchData.lastRound;
-    filteredMatch.push(lastRoundData);
+    if (lastRound.health !== "0" && lastRoundData.bench > 0) {
+      filteredMatch.push(lastRoundData);
+      lastRoundData.round_type["stage"] = matchData.lastRound;
+    }
 
     res.json({
       filteredMatch,
@@ -181,7 +224,7 @@ module.exports = function (app) {
     res.json("done");
   });
   app.delete("/api/match-history2", async (req, res) => {
-    const idsToDelete = ["60b712d8612ee1366014b627"];
+    const idsToDelete = ["60b9389ab8bfe73d6824f61c"];
     for (let id of idsToDelete) {
       await matchesdb.deleteOne({ _id: ObjectId(id) });
       await roundsdb.deleteMany({ matchid: ObjectId(id) });

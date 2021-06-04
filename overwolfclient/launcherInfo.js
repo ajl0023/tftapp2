@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export const startLauncher = (resetState) => {
   // When writing an app that consumes events - it is best if you request
   // only those features that you want to handle.
@@ -20,7 +22,45 @@ export const startLauncher = (resetState) => {
     onErrorListener = function (info) {};
 
     onInfoUpdates2Listener = function (info) {
-      resetState();
+      const matchCheck = sessionStorage.getItem("round");
+      const roundsCheck = sessionStorage.getItem("rounds");
+
+      if (
+        roundsCheck &&
+        info.feature === "lobby_info" &&
+        (info.lobby_info.queueId === "1090" ||
+          info.lobby_info.queueId === "1100")
+      ) {
+        const parsedRounds = JSON.parse(roundsCheck);
+        const formattedRounds = parsedRounds.map((round, i) => {
+          if (round.carouselArr && round.carouselArr.length > 0) {
+            const prev = parsedRounds[i - 1].round_type.stage;
+            const next = parsedRounds[i + 1].round_type.stage;
+            const roundCheck = prev || next;
+            parsedRounds[i].round_type.stage = `${roundCheck[0]}-4`;
+          }
+          round["sortCount"] = i;
+          return round;
+        });
+        axios
+          .post("http://localhost:7000/api/match-history", {
+            rounds: formattedRounds,
+            rank: matchCheck ? matchCheck.rank : null,
+            current_round_data: matchCheck,
+            currRound: matchCheck ? matchCheck.round_type : null,
+          })
+          .then(() => {
+            resetState();
+          })
+          .catch(() => {
+            resetState();
+          });
+        if (sessionStorage.getItem("round")) {
+          sessionStorage.removeItem("round");
+        }
+
+        sessionStorage.removeItem("rounds");
+      }
     };
 
     onNewEventsListener = function (info) {};
@@ -90,7 +130,5 @@ export const startLauncher = (resetState) => {
     }
   });
 
-  overwolf.games.launchers.onTerminated.addListener(function (res) {
-    setTimeout(window.close, 1000);
-  });
+  overwolf.games.launchers.onTerminated.addListener(function (res) {});
 };
