@@ -1,3 +1,3 @@
 git add . 
-git commit -m "added api folder for vercel"
+git commit -m "deleted build folder"
 git push origin master
