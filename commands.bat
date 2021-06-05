@@ -1,3 +1,3 @@
 git add . 
-git commit -m "small type with items container"
-git push origin master
+git commit -m "vercel setup"
+git push origin firebase
