@@ -1,3 +1,3 @@
 git add . 
-git commit -m "firebase setup"
+git commit -m "fixed responsive css errors"
 git push origin firebase
