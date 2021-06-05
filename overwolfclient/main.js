@@ -19,7 +19,8 @@ let currStage;
 let rounds = [];
 let allEvents = [];
 let roundType;
-let currRoundInfo;
+
+let current_match_event;
 let matchEnded = false;
 let current_round_data = {
   store: [],
@@ -206,9 +207,6 @@ function registerEvents(data) {
     roundType = events;
     if (currRound === current_round_data.round) {
       currRound = "same_round";
-    }
-    if (events.name === "match_end") {
-      matchEnded = true;
     }
 
     if (

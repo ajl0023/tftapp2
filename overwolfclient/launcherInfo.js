@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const startLauncher = (resetState) => {
+  
   // When writing an app that consumes events - it is best if you request
   // only those features that you want to handle.
   //
@@ -26,6 +27,7 @@ export const startLauncher = (resetState) => {
       const roundsCheck = sessionStorage.getItem("rounds");
 
       if (
+        matchCheck &&
         roundsCheck &&
         info.feature === "lobby_info" &&
         (info.lobby_info.queueId === "1090" ||

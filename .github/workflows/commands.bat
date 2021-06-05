@@ -1,3 +1,3 @@
 git add . 
-git commit -m "fixed responsive css errors"
+git commit -m "removed some unnecessary code"
 git push origin firebase

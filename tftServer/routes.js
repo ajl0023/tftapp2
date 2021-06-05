@@ -224,12 +224,12 @@ module.exports = function (app) {
     res.json("done");
   });
   app.delete("/api/match-history2", async (req, res) => {
-    const idsToDelete = ["60b9389ab8bfe73d6824f61c"];
+    const idsToDelete = ["60b96daa977de542a05bb67f"];
     for (let id of idsToDelete) {
       await matchesdb.deleteOne({ _id: ObjectId(id) });
       await roundsdb.deleteMany({ matchid: ObjectId(id) });
       await usersdb.updateOne(
-        { _id: ObjectId("60b6cc4fcad875103412be66") },
+        { _id: ObjectId("60b7fccb9de0a73aa8b9c44b") },
         {
           $pull: {
             matches: ObjectId(id),
