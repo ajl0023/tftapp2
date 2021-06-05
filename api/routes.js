@@ -9,7 +9,7 @@ const path = require("path");
 const fs = require("fs");
 module.exports = function (app) {
   app.get("/", function (req, res) {
-    res.sendFile(path.join(__dirname, "../tftapp/build", "index.html"));
+    res.sendFile(path.join(__dirname, "./client", "index.html"));
   });
   app.post("/api/match-history", async (req, res) => {
     const rounds = req.body.rounds;
@@ -241,6 +241,6 @@ module.exports = function (app) {
   });
 
   app.get("*", function (req, res) {
-    res.sendFile(path.join(__dirname, "../tftapp/build", "index.html"));
+    res.sendFile(path.join(__dirname, "./client", "index.html"));
   });
 };
