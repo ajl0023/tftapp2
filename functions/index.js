@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, "../tftapp/build")));
 connect
   .connect()
   .then(() => {
-    app.listen(7001, () => {});
+    app.listen(process.env.PORT || 7000, () => {});
     require("./routes")(app);
   })
   .catch((err) => {});
