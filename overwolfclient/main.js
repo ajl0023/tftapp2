@@ -101,7 +101,7 @@ function handleMatchInfoData(data) {
 
     sessionStorage.setItem("event", JSON.stringify(parseData));
 
-    if (parseData.in_progress === false) {
+    if (parseData.in_progress === false && matchEnded === false) {
       const formattedRounds = rounds.map((round, i) => {
         if (round.carouselArr && round.carouselArr.length > 0) {
           const prev = rounds[i - 1].round_type.stage;
@@ -140,6 +140,7 @@ function handleMatchInfoData(data) {
         sessionStorage.removeItem("rounds");
         sessionStorage.removeItem("allEvents");
       }
+      matchEnded = true;
     }
   }
   if (match_info_data.includes(objProp)) {
@@ -346,4 +347,4 @@ overwolf.games.getRunningGameInfo(function (res) {
 function resetMatch() {
   resetState();
 }
-startLauncher(resetMatch);
+startLauncher(resetMatch, matchEnded);
