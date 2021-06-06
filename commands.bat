@@ -1,3 +1,3 @@
 git add . 
-git commit -m "fixed typo errors from ow api"
+git commit -m "some images aren't loading"
 git push origin master
