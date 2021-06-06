@@ -1,3 +1,3 @@
 git add . 
-git commit -m "edited overwolf implementation"
+git commit -m "fixed typo errors from ow api"
 git push origin firebase
