@@ -87,7 +87,10 @@ function addToData(prop) {
     current_round_data[meobjProp] = meData[meobjProp];
   }
 }
+const statusText = document.getElementById("main_text");
+
 const match_info_data = ["opponent", "round_type", "round_outcome"];
+
 function handleMatchInfoData(data) {
   let parseData;
 
@@ -100,8 +103,11 @@ function handleMatchInfoData(data) {
     parseData = getParsedData(data[objProp]);
 
     sessionStorage.setItem("event", JSON.stringify(parseData));
-
+    if (parseData.in_progress) {
+      statusText.innerText = "Collecting round data";
+    }
     if (parseData.in_progress === false && matchEnded === false) {
+      statusText.innerText = "Waiting for match to start";
       const formattedRounds = rounds.map((round, i) => {
         if (round.carouselArr && round.carouselArr.length > 0) {
           const prev = rounds[i - 1].round_type.stage;

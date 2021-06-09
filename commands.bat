@@ -1,3 +1,3 @@
 git add . 
-git commit -m "some images aren't loading"
+git commit -m "edited readme"
 git push origin master

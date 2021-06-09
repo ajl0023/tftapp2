@@ -29,5 +29,4 @@ app.get("/contact", (req, res) => res.send("Contact Page Route"));
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, () =>
-  );
+app.listen(port, () => console.log(1));
