@@ -39,10 +39,10 @@ const useStyles = makeStyles((theme) => ({
   backgroundImage: {
     width: "100vw",
     backgroundImage: `url(${volibear})`,
-    minHeight: "100vh",
+    height: "100vh",
     backgroundPosition: "center center",
     backgroundRepeat: "no-repeat",
-    backgroundSize: "auto 100%",
+    backgroundSize: "cover",
     display: "flex",
     position: "fixed",
 
