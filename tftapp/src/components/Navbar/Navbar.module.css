@@ -1,0 +1,11 @@
+* {
+  font-family: "Open Sans", sans-serif;
+}
+
+.container {
+  width: 100%;
+  position: -webkit-sticky;
+  position: sticky;
+  background-color: #0d47a1;
+}
+/*# sourceMappingURL=Navbar.module.css.map */

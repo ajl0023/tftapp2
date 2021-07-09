@@ -1,0 +1,10 @@
+* {
+  font-family: "Open Sans", sans-serif;
+}
+.container {
+  width: 100%;
+  position: sticky;
+  background-color: #0d47a1;
+}
+@mixin fill-color($color) {
+}

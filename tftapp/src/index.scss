@@ -1,0 +1,11 @@
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  box-sizing: border-box;
+}
+@use "@material/top-app-bar/mdc-top-app-bar";
+body {
+
+  min-height: 100vh;
+}

@@ -1,0 +1,30 @@
+.container {
+  position: relative;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  height: 100vh;
+}
+
+.content {
+  z-index: 3;
+}
+
+.content .input-bar {
+  width: 500px;
+}
+
+.backdrop {
+  background-color: black;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: 10;
+}
+/*# sourceMappingURL=Home.module.css.map */

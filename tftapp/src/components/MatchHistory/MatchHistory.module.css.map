@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AAAA,YAAY,CAAC;EACX,SAAS,EAAE,IAAI;EACf,aAAa,EAAE,GAAG;EAClB,MAAM,EAAE,IAAI;CACb;;AACD,AAAA,eAAe,CAAC;EACd,OAAO,EAAE,IAAI;EACb,WAAW,EAAE,MAAM;CACpB;;AACD,AAAA,gBAAgB,CAAC;EACf,OAAO,EAAE,IAAI;EACb,cAAc,EAAE,MAAM;CACvB",
+    "sources": [
+        "MatchHistory.module.scss"
+    ],
+    "names": [],
+    "file": "MatchHistory.module.css"
+}

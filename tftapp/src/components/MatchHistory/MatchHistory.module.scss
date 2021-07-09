@@ -1,0 +1,13 @@
+.champ-image {
+  max-width: 50px;
+  border-radius: 20%;
+  height: 100%;
+}
+.star-container {
+  display: flex;
+  align-items: center;
+}
+.champ-container {
+  display: flex;
+  flex-direction: column;
+}
